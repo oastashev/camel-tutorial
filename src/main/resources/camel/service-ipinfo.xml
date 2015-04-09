@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd ">
+
+    <!--suppress UnparsedCustomBeanInspection -->
+    <camel:routeContext id="ipinfoRouteContext" xmlns="http://camel.apache.org/schema/spring">
+
+        <route id="ipinfoRoute">
+            <from uri="direct:resolveIpByIpinfo"/>
+
+            <setHeader headerName="CamelHttpMethod">
+                <simple>GET</simple>
+            </setHeader>
+            <setHeader headerName="CamelHttpPath">
+                <simple>/${body}/json</simple>
+            </setHeader>
+            <to uri="http://ipinfo.io"/>
+
+            <convertBodyTo type="java.lang.String" charset="UTF-8"/>
+
+            <bean ref="jsonToMapProcessor"/>
+
+            <transform>
+                <mvel>
+                    request.body['GeoIpServiceName'] = 'Ipinfo';
+                    request.body;
+                </mvel>
+            </transform>
+        </route>
+
+    </camel:routeContext>
+
+</beans>

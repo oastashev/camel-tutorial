@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd ">
+
+    <bean id="sql" p:dataSource-ref="dataSource" class="org.apache.camel.component.sql.SqlComponent"/>
+
+    <bean id="bodyAggregation" class="com.cardpay.incubator.camel.camel.BodyAggregationStrategy"/>
+
+    <!--suppress UnparsedCustomBeanInspection -->
+    <camel:routeContext id="geoipContext" xmlns="http://camel.apache.org/schema/spring">
+
+        <route id="resolveIpFileRoute">
+            <from uri="file:{{camelTutorialDir}}?move=.done/${date:now:yyyyMMdd}/${file:name}&amp;moveFailed=failed/${file:name.noext}-${date:now:yyyyMMddHHmmssSSS}.${file:ext}"/>
+            <split parallelProcessing="true">
+                <tokenize token="\r\n|\n" xml="false" trim="true"/>
+                <to uri="direct:resolveIp"/>
+            </split>
+        </route>
+
+        <route id="resolveIpRoute">
+            <from uri="direct:resolveIp"/>
+            <log message="${body}"/>
+
+            <setHeader headerName="ip">
+                <simple>${body}</simple>
+            </setHeader>
+
+            <to uri="direct:resolveIpByDb"/>
+
+            <choice>
+                <when>
+                    <mvel>request.body.size() > 0</mvel>
+
+                    <transform>
+                        <mvel>request.body[0]</mvel>
+                    </transform>
+
+                </when>
+                <otherwise>
+
+                    <transform>
+                        <simple>${headers.ip}</simple>
+                    </transform>
+
+                    <loadBalance>
+                        <failover roundRobin="true">
+                            <exception>com.fasterxml.jackson.databind.JsonMappingException</exception>
+                            <exception>org.apache.camel.component.http.HttpOperationFailedException</exception>
+                        </failover>
+                        <to uri="direct:resolveIpByTelize"/>
+                        <to uri="direct:resolveIpByIpinfo"/>
+                    </loadBalance>
+
+                    <choice>
+                        <when>
+                            <mvel>!request.body.containsKey('city')</mvel>
+                            <transform>
+                                <mvel>
+                                    request.body['city'] = '';
+                                    request.body;
+                                </mvel>
+                            </transform>
+                        </when>
+                    </choice>
+
+                    <to uri="seda:storeInDatabase"/>
+
+                </otherwise>
+            </choice>
+
+            <log message="${body}"/>
+        </route>
+
+        <route id="resolveIpByDbRoute">
+            <from uri="direct:resolveIpByDb"/>
+            <to uri="sql:SELECT * FROM geoip WHERE ip = :#${body}"/>
+        </route>
+
+        <route id="storeInDatabaseRoute">
+            <from uri="seda:storeInDatabase"/>
+            <choice>
+                <when>
+                    <simple>${body['ip']} != null and ${body['country']} != null</simple>
+
+                    <transform>
+                        <mvel>
+                            request.body['country'] = new java.util.Locale("", request.body['country']).getDisplayCountry(new java.util.Locale("en"));
+                            request.body;
+                        </mvel>
+                    </transform>
+
+                    <aggregate strategyRef="bodyAggregation" completionTimeout="1000" completionSize="10">
+                        <correlationExpression>
+                            <constant>true</constant>
+                        </correlationExpression>
+
+                        <to uri="sql:INSERT INTO geoip (ip, country, city, service) VALUES (:#ip, :#country, :#city, :#GeoIpServiceName)?batch=true"/>
+                    </aggregate>
+                </when>
+            </choice>
+        </route>
+
+    </camel:routeContext>
+
+</beans>

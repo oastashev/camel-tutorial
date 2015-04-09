@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd ">
+
+    <bean id="sql" class="org.apache.camel.component.sql.SqlComponent">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="bodyAggregation" class="com.cardpay.incubator.camel.camel.BodyAggregationStrategy"/>
+
+    <!--suppress UnparsedCustomBeanInspection -->
+    <camel:routeContext id="geoipContext" xmlns="http://camel.apache.org/schema/spring">
+
+        <route id="resolveIpFileRoute">
+            <from uri="file:{{camelTutorialDir}}?move=.done/${date:now:yyyyMMdd}/${file:name}&amp;moveFailed=failed/${file:name.noext}-${date:now:yyyyMMddHHmmssSSS}.${file:ext}"/>
+            <split parallelProcessing="true">
+                <tokenize token="\r\n|\n" xml="false" trim="true"/>
+                <log message="${body}" loggingLevel="DEBUG"/>
+                <to uri="direct:resolveIp"/>
+                <to uri="direct:storeInDatabase"/>
+            </split>
+        </route>
+
+        <route id="storeInDatabaseRoute">
+            <from uri="direct:storeInDatabase"/>
+            <choice>
+                <when>
+                    <simple>${body['ip']} != null and ${body['country']} != null</simple>
+                    <log message="${body}" loggingLevel="DEBUG"/>
+
+                    <choice>
+                        <when>
+                            <mvel>!request.body.containsKey('city')</mvel>
+                            <transform>
+                                <mvel>
+                                    request.body['city'] = 'n/a';
+                                    request.body;
+                                </mvel>
+                            </transform>
+                        </when>
+                    </choice>
+
+                    <aggregate strategyRef="bodyAggregation" completionTimeout="1000" completionSize="5">
+                        <correlationExpression>
+                            <constant>true</constant>
+                        </correlationExpression>
+
+                        <to uri="sql:INSERT INTO geoip (ip, country, city, service) VALUES (:#ip, :#country, :#city, :#GeoIpServiceName)?batch=true"/>
+                        <to uri="sql:SELECT count(1) total FROM geoip"/>
+
+                        <log message="${body}" loggingLevel="DEBUG"/>
+                    </aggregate>
+                </when>
+            </choice>
+        </route>
+
+        <route id="resolveIpRoute">
+            <from uri="direct:resolveIp"/>
+
+            <loadBalance>
+                <failover roundRobin="true">
+                    <exception>com.fasterxml.jackson.databind.JsonMappingException</exception>
+                    <exception>org.apache.camel.component.http.HttpOperationFailedException</exception>
+                </failover>
+                <to uri="direct:resolveIpByTelize"/>
+                <to uri="direct:resolveIpByIpinfo"/>
+            </loadBalance>
+        </route>
+
+    </camel:routeContext>
+
+</beans>
