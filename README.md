@@ -4,4 +4,4 @@
 
 **Run Tomcat 7**
 
-`mvn clean clean tomcat7:run -U`
+`mvn clean tomcat7:run -U`
