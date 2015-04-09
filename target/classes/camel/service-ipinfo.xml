@@ -21,7 +21,9 @@
 
             <convertBodyTo type="java.lang.String" charset="UTF-8"/>
 
-            <bean ref="jsonToMapProcessor"/>
+            <unmarshal>
+                <json library="Jackson" unmarshalTypeName="java.util.HashMap"/>
+            </unmarshal>
 
             <transform>
                 <mvel>

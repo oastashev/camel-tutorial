@@ -29,7 +29,6 @@
             <choice>
                 <when>
                     <simple>${body['ip']} != null and ${body['country']} != null</simple>
-                    <log message="${body}" loggingLevel="DEBUG"/>
 
                     <choice>
                         <when>
@@ -48,9 +47,10 @@
                             <constant>true</constant>
                         </correlationExpression>
 
+                        <log message="${body}" loggingLevel="DEBUG"/>
                         <to uri="sql:INSERT INTO geoip (ip, country, city, service) VALUES (:#ip, :#country, :#city, :#GeoIpServiceName)?batch=true"/>
-                        <to uri="sql:SELECT count(1) total FROM geoip"/>
 
+                        <to uri="sql:SELECT count(1) total FROM geoip"/>
                         <log message="${body}" loggingLevel="DEBUG"/>
                     </aggregate>
                 </when>
