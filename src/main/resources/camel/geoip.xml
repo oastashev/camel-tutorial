@@ -15,7 +15,7 @@
 
         <route id="resolveIpFileRoute">
             <from uri="file:{{camelTutorialDir}}?move=.done/${date:now:yyyyMMdd}/${file:name}&amp;moveFailed=failed/${file:name.noext}-${date:now:yyyyMMddHHmmssSSS}.${file:ext}"/>
-            <split parallelProcessing="true">
+            <split parallelProcessing="true" streaming="true">
                 <tokenize token="\r\n|\n" xml="false" trim="true"/>
                 <to uri="direct:resolveIp"/>
             </split>
