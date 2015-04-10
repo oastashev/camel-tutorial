@@ -29,7 +29,7 @@
                 <simple>${body}</simple>
             </setHeader>
 
-            <to uri="direct:resolveIpByDb"/>
+            <to uri="sql:SELECT * FROM geoip WHERE ip = :#${body}"/>
 
             <choice>
                 <when>
@@ -67,7 +67,7 @@
                         </when>
                     </choice>
 
-                    <to uri="seda:storeInDatabase"/>
+                    <to uri="seda:storeInDatabase?blockWhenFull=true"/>
 
                 </otherwise>
             </choice>
@@ -75,13 +75,8 @@
             <log message="${body}"/>
         </route>
 
-        <route id="resolveIpByDbRoute">
-            <from uri="direct:resolveIpByDb"/>
-            <to uri="sql:SELECT * FROM geoip WHERE ip = :#${body}"/>
-        </route>
-
         <route id="storeInDatabaseRoute">
-            <from uri="seda:storeInDatabase"/>
+            <from uri="seda:storeInDatabase?concurrentConsumers=4&amp;size=600"/>
             <choice>
                 <when>
                     <simple>${body['ip']} != null and ${body['country']} != null</simple>

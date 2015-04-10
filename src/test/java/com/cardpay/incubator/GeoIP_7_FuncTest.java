@@ -34,7 +34,7 @@ public class GeoIP_7_FuncTest extends FuncTest {
         File f = new File(TEMP_DIR, System.currentTimeMillis() + ".txt");
         try (PrintWriter out = new PrintWriter(f)) {
             Random rnd = new Random();
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < 50; i++) {
                 out.println(String.format("%d.%d.%d.%d", rnd.nextInt(255), rnd.nextInt(255), rnd.nextInt(255), rnd.nextInt(255)));
             }
         }

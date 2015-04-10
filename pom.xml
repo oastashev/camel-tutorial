@@ -273,6 +273,26 @@
             <artifactId>jrobin</artifactId>
             <version>1.5.9</version>
         </dependency>
+        <!-- itext, option to add PDF export -->
+        <dependency>
+            <groupId>com.lowagie</groupId>
+            <artifactId>itext</artifactId>
+            <version>4.2.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcmail-jdk14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcprov-jdk14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bctsp-jdk14</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <!-- https://jstl.java.net/ -->
         <dependency>
@@ -353,6 +373,8 @@
                         <java.awt.headless>true</java.awt.headless>
                         <nop>0</nop>
                         <logback.configurationFile>file:${project.basedir}/src/test/tomcat/logback.xml</logback.configurationFile>
+                        <camelTutorialDir>${project.build.directory}/!incoming</camelTutorialDir>
+                        <storage-directory>${project.build.directory}</storage-directory>
                     </systemProperties>
                 </configuration>
             </plugin>

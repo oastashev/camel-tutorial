@@ -20,12 +20,12 @@
                 <tokenize token="\r\n|\n" xml="false" trim="true"/>
                 <log message="${body}" loggingLevel="DEBUG"/>
                 <to uri="direct:resolveIp"/>
-                <to uri="direct:storeInDatabase"/>
+                <to uri="seda:storeInDatabase?blockWhenFull=true"/>
             </split>
         </route>
 
         <route id="storeInDatabaseRoute">
-            <from uri="direct:storeInDatabase"/>
+            <from uri="seda:storeInDatabase?concurrentConsumers=4&amp;size=10"/>
             <choice>
                 <when>
                     <simple>${body['ip']} != null and ${body['country']} != null</simple>

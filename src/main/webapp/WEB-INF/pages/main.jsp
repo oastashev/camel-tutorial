@@ -44,17 +44,19 @@
 
     <div class="row">
         <div class="col-lg-10 col-sm-11">
-
-            <table ng-table="geoipTable" class="table table-striped table-hover table-condensed">
-                <tr ng-repeat="v in $data">
-                    <td style="width:200px" data-title="'Added'" sortable="'added'">{{ v.added | date:'yyyy-MM-dd HH:mm:ss.sss' }}</td>
-                    <td style="width:100px" data-title="'IP'" sortable="'ip'">{{ v.ip }}</td>
-                    <td style="width:200px" data-title="'Country'" sortable="'country'">{{v.country }}</td>
-                    <td data-title="'City'" sortable="'city'">{{v.city }}</td>
-                    <td style="width:100px" data-title="'Service'" sortable="'service'">{{v.service }}</td>
-                </tr>
-            </table>
-
+            <div ng-show="isLoading">Loading...</div>
+            <div ng-hide="isLoading">
+                <div>Total: {{total}}</div>
+                <table ng-table="geoipTable" class="table table-striped table-hover table-condensed" >
+                    <tr ng-repeat="v in $data">
+                        <td style="width:200px" data-title="'Added'" sortable="'added'">{{ v.added | date:'yyyy-MM-dd HH:mm:ss.sss' }}</td>
+                        <td style="width:100px" data-title="'IP'" sortable="'ip'">{{ v.ip }}</td>
+                        <td style="width:200px" data-title="'Country'" sortable="'country'">{{v.country }}</td>
+                        <td data-title="'City'" sortable="'city'">{{v.city }}</td>
+                        <td style="width:100px" data-title="'Service'" sortable="'service'">{{v.service }}</td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 

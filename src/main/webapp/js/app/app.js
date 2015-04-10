@@ -1,14 +1,7 @@
 'use strict';
 angular.module('CamelTutorial', ['ngTable', 'ngResource'])
-    .factory('gateway', ['$resource', function ($resource) {
-        var timestamp = function () {
-            return +new Date;
-        };
-        return {
-            geoip: $resource('gateway/data/geoip?_=:timestamp', {timestamp: timestamp})
-        }
-    }])
-    .controller('MainCtrl', function ($scope, ngTableParams, gateway) {
+    .controller('MainCtrl', function ($scope, $resource, ngTableParams) {
+        $scope.total = 0;
 
         $scope.geoipTable = new ngTableParams({page: 1, count: 20}, {
             total: 1,
@@ -29,15 +22,17 @@ angular.module('CamelTutorial', ['ngTable', 'ngResource'])
                     })[0]
                 );
 
-                gateway.geoip.get(qryParams, function (data) {
-                    $scope.isLoading = false;
-                    if (!data.success) {
-                        $defer.reject();
-                    } else {
-                        params.total(data.total);
-                        $defer.resolve(data.records);
-                    }
-                });
+                $resource('gateway/data/geoip?_=:timestamp', {timestamp: +new Date})
+                    .get(qryParams, function (data) {
+                        $scope.isLoading = false;
+                        if (!data.success) {
+                            $defer.reject();
+                        } else {
+                            $scope.total = data.total;
+                            params.total(data.total);
+                            $defer.resolve(data.records);
+                        }
+                    });
             }
         });
 
