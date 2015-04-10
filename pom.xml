@@ -20,6 +20,7 @@
 
         <spring.version>4.1.6.RELEASE</spring.version>
         <camel.version>2.15.0</camel.version>
+
         <javamelody.version>1.55.0</javamelody.version>
     </properties>
 
