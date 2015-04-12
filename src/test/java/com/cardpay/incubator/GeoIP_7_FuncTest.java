@@ -6,6 +6,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Profile;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -27,6 +28,7 @@ import java.util.Random;
         "classpath:/camel/service-ipinfo.xml",
         "classpath:/camel/geoip_7.xml"
 })
+@DirtiesContext
 public class GeoIP_7_FuncTest extends FuncTest {
 
     @Test

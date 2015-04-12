@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -24,7 +25,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
         "classpath:/camel/service-ipinfo.xml",
         "classpath:/camel/geoip_2.xml"
 })
-public class GeoIP_2_FuncTest {
+@DirtiesContext
+public class GeoIP_2_FuncTest extends FuncTest {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 

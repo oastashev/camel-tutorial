@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -20,6 +21,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
         //"classpath:application-db.xml",
         "classpath:application-db-spied.xml",
 })
+@DirtiesContext
 public class GeoIpDaoFuncTest {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

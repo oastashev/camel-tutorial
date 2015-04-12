@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -25,6 +26,7 @@ import java.io.PrintWriter;
         "classpath:/camel/service-ipinfo.xml",
         "classpath:/camel/geoip_3.xml"
 })
+@DirtiesContext
 public class GeoIP_3_FuncTest extends FuncTest {
 
     @Test
